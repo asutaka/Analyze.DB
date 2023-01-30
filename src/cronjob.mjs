@@ -1,5 +1,6 @@
 import cron from "cron";
 import db from './lib/helpers/database.mjs';
+import axios from 'axios';
 
 const DOMMAIN_MAIN = "https://analyze-api.vercel.app/";
 const DOMAIN_SUB1 = "https://asutaka-subcribe1.onrender.com/";
@@ -16,53 +17,83 @@ const TABLE_SESSION = "SESSION";
 
 const CheckDomainMain = () => {
     new cron.CronJob('30 0/3 * * * *', async () => {
-        var date = (new Date()).getTime();
-        var result = await axios.get(DOMMAIN_MAIN);
-        console.log(date + "|" + DOMMAIN_MAIN + "|", result.data);
+        try{
+            var date = (new Date()).getTime();
+            var result = await axios.get(DOMMAIN_MAIN);
+            console.log(date + "|" + DOMMAIN_MAIN + "|", result.data);
+        }
+        catch(error)
+        {
+            console.error("CheckDomainMain", error.response.data);
+        }
     }).start();
 };
 
 const CheckDomain1 = () => {
     new cron.CronJob('30 1/3 * * * *', async () => {
-        var date = (new Date()).getTime();
-        var result1 = await axios.get(DOMAIN_SUB1);
-        console.log(date + "|" + DOMAIN_SUB1 + "|", result1.data);
-
-        var result2 = await axios.get(DOMAIN_SUB2);
-        console.log(date + "|" + DOMAIN_SUB2 + "|", result2.data);
+        try{
+            var date = (new Date()).getTime();
+            var result1 = await axios.get(DOMAIN_SUB1);
+            console.log(date + "|" + DOMAIN_SUB1 + "|", result1.data);
+    
+            var result2 = await axios.get(DOMAIN_SUB2);
+            console.log(date + "|" + DOMAIN_SUB2 + "|", result2.data);
+        }
+        catch(error)
+        {
+            console.error("CheckDomain1", error.response.data);
+        }
     }).start();
 };
 
 const CheckDomain2 = () => {
     new cron.CronJob('30 3/3 * * * *', async () => {
-        var date = (new Date()).getTime();
-        var result1 = await axios.get(DOMAIN_SUB3);
-        console.log(date + "|" + DOMAIN_SUB3 + "|", result1.data);
-
-        var result2 = await axios.get(DOMAIN_SUB4);
-        console.log(date + "|" + DOMAIN_SUB4 + "|", result2.data);
+        try{
+            var date = (new Date()).getTime();
+            var result1 = await axios.get(DOMAIN_SUB3);
+            console.log(date + "|" + DOMAIN_SUB3 + "|", result1.data);
+    
+            var result2 = await axios.get(DOMAIN_SUB4);
+            console.log(date + "|" + DOMAIN_SUB4 + "|", result2.data);
+        }
+        catch(error)
+        {
+            console.error("CheckDomain2", error.response.data);
+        }
     }).start();
 };
 
 const CheckDomain3 = () => {
     new cron.CronJob('30 5/3 * * * *', async () => {
-        var date = (new Date()).getTime();
-        var result1 = await axios.get(DOMAIN_SUB5);
-        console.log(date + "|" + DOMAIN_SUB5 + "|", result1.data);
-
-        var result2 = await axios.get(DOMAIN_SUB6);
-        console.log(date + "|" + DOMAIN_SUB6 + "|", result2.data);
+        try{
+            var date = (new Date()).getTime();
+            var result1 = await axios.get(DOMAIN_SUB5);
+            console.log(date + "|" + DOMAIN_SUB5 + "|", result1.data);
+    
+            var result2 = await axios.get(DOMAIN_SUB6);
+            console.log(date + "|" + DOMAIN_SUB6 + "|", result2.data);
+        }
+        catch(error)
+        {
+            console.error("CheckDomain3", error.response.data);
+        }
     }).start();
 };
 
 const CheckDomain4 = () => {
     new cron.CronJob('30 7/3 * * * *', async () => {
-        var date = (new Date()).getTime();
-        var result1 = await axios.get(DOMAIN_SUB7);
-        console.log(date + "|" + DOMAIN_SUB7 + "|", result1.data);
-
-        var result2 = await axios.get(DOMAIN_SUB8);
-        console.log(date + "|" + DOMAIN_SUB8 + "|", result2.data);
+        try{
+            var date = (new Date()).getTime();
+            var result1 = await axios.get(DOMAIN_SUB7);
+            console.log(date + "|" + DOMAIN_SUB7 + "|", result1.data);
+    
+            var result2 = await axios.get(DOMAIN_SUB8);
+            console.log(date + "|" + DOMAIN_SUB8 + "|", result2.data);
+        }
+        catch(error)
+        {
+            console.error("CheckDomain4", error.response.data);
+        }
     }).start();
 };
 
