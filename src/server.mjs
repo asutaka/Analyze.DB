@@ -163,6 +163,7 @@ app.post('/addSession', jsonParser,function (req, res) {
             }
             return res.status(200).json({msg: "success", code: 1 });
         });
+        //Update status for database, api
     }
     catch(e)
     {
