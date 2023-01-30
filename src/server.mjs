@@ -50,7 +50,6 @@ app.post('/deleteMap', jsonParser,async (req, res) =>  {
                         }
                         else
                         {
-                            console.log("here");
                             //Delete on API
                             try{
                                 var text = data.phone;
@@ -78,7 +77,6 @@ app.post('/deleteMap', jsonParser,async (req, res) =>  {
     {
         return res.status(200).json({msg: "[EXCEPTION] Not delete record Map", code: -62 });
     }
-    // return res.status(200).json({msg: "111", code: 1 });
 });
 
 //Delete User
@@ -88,11 +86,27 @@ app.post('/deleteUser', jsonParser,async (req, res) =>  {
     try{
             const collection  = connection.db.collection(TALBE_USER);
             collection.find({ phone: data.phone }).toArray().then(function(result){
-                if(result != null)
+                if(result != null && result.length > 0)
                 {
-                    db.deleteRecord(TALBE_USER, result._id, (callback) => {
+                    db.deleteRecord(TALBE_USER, result[0]._id, async (callback) => {
                         if(callback == null)
+                        {
                             return res.status(200).json({msg: "[ERROR] Not delete record", code: -60 });
+                        }
+                        else{
+                            //Delete on API
+                            try{
+                                var text = data.phone;
+                                let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
+                                var model = { phone: text, signature:  hash}
+                                var resPost = await axios.post(DOMMAIN_MAIN + "/secrect/deleteUser", model);
+                                return res.status(200).json(resPost.data);
+                            }
+                            catch(e)
+                            {
+                                return res.status(200).json({msg: DOMMAIN_MAIN + "/secrect/deleteUser" + "Not Call!", code: -69 });
+                            }
+                        }   
                     });
                 }
                 else{
@@ -103,18 +117,6 @@ app.post('/deleteUser', jsonParser,async (req, res) =>  {
     catch(e)
     {
         return res.status(200).json({msg: "[EXCEPTION] Not delete record", code: -62 });
-    }
-    //Delete on API
-    try{
-        var text = data.phone;
-        let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
-        var model = { phone: text, signature:  hash}
-        var resPost = await axios.post(DOMMAIN_MAIN + "/secrect/deleteUser", model);
-        return res.status(200).json(resPost.data);
-    }
-    catch(e)
-    {
-        return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -69 });
     }
 });
 
@@ -195,8 +197,7 @@ app.post('/resetPassword', jsonParser,async (req, res) => {
                             return res.status(200).json({msg: DOMMAIN_MAIN + "/updatePassword|"+ "Not Call!", code: -69 });
                         }
                     }
-                }
-                );
+                });
             }
             else{
                 return res.status(200).json({msg: "[ERROR] Not found user for update", code: -61 });
