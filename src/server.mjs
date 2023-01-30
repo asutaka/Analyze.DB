@@ -4,6 +4,7 @@ import express from "express";
 import bodyParser from 'body-parser';
 import axios from 'axios';
 import cronjob from './cronjob.mjs';
+import crypto from 'crypto';
 
 const app = express();
 const connection = mongoose.connection;
@@ -35,47 +36,58 @@ await db.conn();
 
 //Delete Map
 app.post('/deleteMap', jsonParser,async (req, res) =>  {
+    var data = req.body;
     //Delete on Database
     try{
             const collection  = connection.db.collection(TABLE_MAP);
-            collection.find({ phone: _phone }).toArray().then(function(result){
-                if(result != null)
+            collection.find({ phone: data.phone }).toArray().then(function(result){
+                if(result != null && result.length > 0)
                 {
-                    db.deleteRecord(TABLE_MAP, result._id, (callback) => {
+                    db.deleteRecord(TABLE_MAP, result[0]._id, async (callback) => {
                         if(callback == null)
-                            return res.status(200).json({msg: "[ERROR] Not delete record", code: -60 });
+                        {
+                            return res.status(200).json({ msg: "[ERROR] Not delete record Map in Database", code: -60 });
+                        }
+                        else
+                        {
+                            console.log("here");
+                            //Delete on API
+                            try{
+                                var text = data.phone;
+                                let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
+                                var model = { phone: text, signature:  hash}
+                                await axios.post(DOMMAIN_MAIN + "/secrect/deleteMap", model)
+                                .then(function (response){
+                                    return res.status(200).json(response.data);
+                                })
+                            }
+                            catch(e)
+                            {
+                                return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -69 });
+                            }
+                        } 
                     });
                 }
-                else{
-                    return res.status(200).json({msg: "[ERROR] Not found record for Delete", code: -61 });
+                else
+                {
+                    return res.status(200).json({msg: "[ERROR] Not found record Map for Delete", code: -61 });
                 }
             })
     }
     catch(e)
     {
-        return res.status(200).json({msg: "[EXCEPTION] Not delete record", code: -62 });
+        return res.status(200).json({msg: "[EXCEPTION] Not delete record Map", code: -62 });
     }
-    //Delete on API
-    try{
-        var data = req.body;
-        var text = data.phone;
-        let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
-        var model = { phone: text, signature:  hash}
-        var resPost = await axios.post(DOMMAIN_MAIN + "/secrect/deleteMap", model);
-        return res.status(200).json(resPost.data);
-    }
-    catch(e)
-    {
-        return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -69 });
-    }
+    // return res.status(200).json({msg: "111", code: 1 });
 });
 
 //Delete User
 app.post('/deleteUser', jsonParser,async (req, res) =>  {
+    var data = req.body;
     //Delete on Database
     try{
             const collection  = connection.db.collection(TALBE_USER);
-            collection.find({ phone: _phone }).toArray().then(function(result){
+            collection.find({ phone: data.phone }).toArray().then(function(result){
                 if(result != null)
                 {
                     db.deleteRecord(TALBE_USER, result._id, (callback) => {
@@ -94,7 +106,6 @@ app.post('/deleteUser', jsonParser,async (req, res) =>  {
     }
     //Delete on API
     try{
-        var data = req.body;
         var text = data.phone;
         let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
         var model = { phone: text, signature:  hash}
