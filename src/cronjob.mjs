@@ -2,6 +2,9 @@ import cron from "cron";
 import db from './lib/helpers/database.mjs';
 import axios from 'axios';
 import crypto from 'crypto';
+import mongoose from 'mongoose'
+
+const connection = mongoose.connection;
 
 const DOMMAIN_MAIN = "https://analyze-api.vercel.app/";
 const DOMAIN_SUB1 = "https://asutaka-subcribe1.onrender.com/";
@@ -105,10 +108,9 @@ const SyncUserFromAPI = () => {
             var text = "users";
             let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
             axios.get(DOMMAIN_MAIN + 'secret/users/' + hash).then(async (response) => {
-                response.data.forEach((item) => {
+                response.forEach((item) => {
                     collection.find({ phone: item.phone }).toArray().then(function(result){
-                        if(result.status != item.status 
-                            || result.password != item.password)
+                        if(result.password != item.password)
                         {
                             //update lai db
                             db.updateUser(TALBE_USER, item.id, item.phone, item.password, item.createdtime, item.updatedtime, item.status, (callback) => {
@@ -134,7 +136,7 @@ const SyncMapFromAPI = () => {
             var text = "maps";
             let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
             axios.get(DOMMAIN_MAIN + 'secret/maps/' + hash).then(async (response) => {
-                response.data.forEach((item) => {
+                response.forEach((item) => {
                     collection.find({ phone: item.phone }).toArray().then(function(result){
                         if(result == null)
                         {
@@ -158,27 +160,80 @@ const SyncMapFromAPI = () => {
 const CheckStatusUser = () => {
     new cron.CronJob('30 0/5 * * * *', async () => {
         try{
+            var arrUpdate = [];
             const collection  = connection.db.collection(TABLE_SESSION);
             collection.find({}).toArray().then(function(response){
-                if(response != null)
+                if(response != null && response.length > 0)
                 {
                     var date = (new Date()).getTime();
-                    response.data.forEach(async (item) => {
+                    response.forEach(async (item) => {
                         if(date >= item.session)
                         {
-                            var text = item.phone+false;
-                            let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
-                            var model = { phone: item.phone, status: false, signature: hash };
-                            var resPost = await axios.post(DOMMAIN_MAIN + "secret/updateStatus", model);
-                            console.log(item.phone, resPost.data);
+                            arrUpdate.push(item);
                         }
                     }); 
+
+                    const sleep = ms =>
+                    new Promise(res => {
+                        setTimeout(res, ms)
+                    })
+
+                    const myPromise = num =>
+                    sleep(5000).then(async () => {
+                        //Update to database
+                        try{
+                            const collectionUser  = connection.db.collection(TALBE_USER);
+                            collectionUser.find({ phone: num.phone }).toArray().then(function(result){
+                                if(result != null && result.length > 0)
+                                {
+                                    var item = result[0];
+                                    db.updateUser(TALBE_USER, item.id, item.phone, item.password, item.createdtime, date, false, async (callback1) => {
+                                        if(callback1 != null)
+                                        {
+                                             //Update to API
+                                             try{
+                                                 //Update to API
+                                                var text = num.phone+false;
+                                                let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
+                                                var model = { phone: num.phone, status: false, signature: hash };
+                                                var resPost = await axios.post(DOMMAIN_MAIN + "secret/updateStatus", model);
+                                                // console.log("resPost", resPost.data);
+                                            }
+                                            catch(e0)
+                                            {
+                                                console.log(DOMMAIN_MAIN + "secret/updateStatus|" + e0);
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        catch(e)
+                        {
+                            console.log("[EXCEPTION] Database cannot update record| " + e);
+                        }
+                        //Delete Record
+                        db.deleteRecord(TABLE_SESSION, num._id, (callback) => {
+                            // console.log("callback", callback);
+                        });
+                    })
+
+                    const forEachSeries = async (iterable, action) => {
+                        for (const x of iterable) {
+                            await action(x)
+                        }
+                    }
+
+                    forEachSeries(arrUpdate, myPromise)
+                    .then(() => {
+                        console.log('all done!')
+                    })
                 } 
             });
         }
         catch(ex)
         {
-            console.log("[ERROR] NOT update status");
+            console.log("[ERROR] NOT update status" + ex);
         }
     }).start();
 };
