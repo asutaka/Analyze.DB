@@ -146,8 +146,7 @@ const addUser = (table, _phone, _password, _createdtime, callback) => {
 const updateUser = (table, id, _phone, _password, _createdtime, _updatedtime, _status, callback) =>{
     conn();
     mongoose.connection.collection(table).updateOne({ _id: mongoose.Types.ObjectId(id) },
-    { $set: { session : _session,
-        phone : _phone,
+    { $set: { phone : _phone,
         password : _password,
         createdtime : _createdtime,
         updatedtime: _updatedtime,

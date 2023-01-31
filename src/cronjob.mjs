@@ -99,12 +99,12 @@ const CheckDomain4 = () => {
 };
 
 const SyncUserFromAPI = () => {
-    new cron.CronJob('30 5/15 * * * *', async () => {
+    new cron.CronJob('30 5 * * * *', async () => {
         try{
             const collection  = connection.db.collection(TALBE_USER);
             var text = "users";
             let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
-            axios.get(DOMMAIN_MAIN + 'secrect/users/' + hash).then(async (response) => {
+            axios.get(DOMMAIN_MAIN + 'secret/users/' + hash).then(async (response) => {
                 response.data.forEach((item) => {
                     collection.find({ phone: item.phone }).toArray().then(function(result){
                         if(result.status != item.status 
@@ -113,7 +113,7 @@ const SyncUserFromAPI = () => {
                             //update lai db
                             db.updateUser(TALBE_USER, item.id, item.phone, item.password, item.createdtime, item.updatedtime, item.status, (callback) => {
                                 if(callback == null)
-                                    return res.status(200).json({msg: "[ERROR] Not update user sync from API", code: -60 });
+                                    return res.status(200).json({msg: "[ERROR] Not update user sync from API", code: -100 });
                             });
                         }
                     });
@@ -133,7 +133,7 @@ const SyncMapFromAPI = () => {
             const collection  = connection.db.collection(TABLE_MAP);
             var text = "maps";
             let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
-            axios.get(DOMMAIN_MAIN + 'secrect/maps/' + hash).then(async (response) => {
+            axios.get(DOMMAIN_MAIN + 'secret/maps/' + hash).then(async (response) => {
                 response.data.forEach((item) => {
                     collection.find({ phone: item.phone }).toArray().then(function(result){
                         if(result == null)
@@ -141,7 +141,7 @@ const SyncMapFromAPI = () => {
                             //insert map
                             db.addMap(TABLE_MAP, item.phone, item.chatId, (callback) => {
                                 if(callback == null)
-                                    return res.status(200).json({msg: "[ERROR] Not insert map sync from API", code: -60 });
+                                    return res.status(200).json({msg: "[ERROR] Not insert map sync from API", code: -100 });
                             });
                         }
                     });
@@ -169,7 +169,7 @@ const CheckStatusUser = () => {
                             var text = item.phone+false;
                             let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
                             var model = { phone: item.phone, status: false, signature: hash };
-                            var resPost = await axios.post(DOMMAIN_MAIN + "/secrect/updateStatus", model);
+                            var resPost = await axios.post(DOMMAIN_MAIN + "secret/updateStatus", model);
                             console.log(item.phone, resPost.data);
                         }
                     }); 
