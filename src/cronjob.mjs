@@ -6,8 +6,8 @@ import mongoose from 'mongoose'
 
 const connection = mongoose.connection;
 
-// const DOMMAIN_MAIN = "https://analyze-api.vercel.app/";
-const DOMMAIN_MAIN = "http://localhost:8999/";
+const DOMMAIN_MAIN = "https://analyze-api.vercel.app/";
+// const DOMMAIN_MAIN = "http://localhost:8999/";
 const DOMAIN_SUB1 = "https://asutaka-subcribe1.onrender.com/";
 const DOMAIN_SUB2 = "https://asutaka-subcribe2.onrender.com/";
 const DOMAIN_SUB3 = "https://asutakaoutlook-subcribe3.onrender.com/";

@@ -18,14 +18,14 @@ const TABLE_MAP = "MAP";
 const TALBE_USER = "USER";
 const TABLE_SESSION = "SESSION";
 
-// cronjob.CheckDomainMain();
-// cronjob.CheckDomain1();
-// cronjob.CheckDomain2();
-// cronjob.CheckDomain3();
-// cronjob.CheckDomain4();
-// cronjob.SyncUserFromAPI();
+cronjob.CheckDomainMain();
+cronjob.CheckDomain1();
+cronjob.CheckDomain2();
+cronjob.CheckDomain3();
+cronjob.CheckDomain4();
+cronjob.SyncUserFromAPI();
 cronjob.SyncMapFromAPI();
-// cronjob.CheckStatusUser();
+cronjob.CheckStatusUser();
 
 app.get('/', async (req, res)  => {
     res.status(200).json({msg: "hello world" });
