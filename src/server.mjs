@@ -18,14 +18,14 @@ const TABLE_MAP = "MAP";
 const TALBE_USER = "USER";
 const TABLE_SESSION = "SESSION";
 
-cronjob.CheckDomainMain();
-cronjob.CheckDomain1();
-cronjob.CheckDomain2();
-cronjob.CheckDomain3();
-cronjob.CheckDomain4();
-cronjob.SyncUserFromAPI();
+// cronjob.CheckDomainMain();
+// cronjob.CheckDomain1();
+// cronjob.CheckDomain2();
+// cronjob.CheckDomain3();
+// cronjob.CheckDomain4();
+// cronjob.SyncUserFromAPI();
 cronjob.SyncMapFromAPI();
-cronjob.CheckStatusUser();
+// cronjob.CheckStatusUser();
 
 app.get('/', async (req, res)  => {
     res.status(200).json({msg: "hello world" });
@@ -60,6 +60,10 @@ app.post('/deleteMap', jsonParser,async (req, res) =>  {
                                 .then(function (response){
                                     return res.status(200).json(response.data);
                                 })
+                                .catch(function (error) {
+                                    console.log("Exception when call: " + DOMMAIN_MAIN + "/secret/deleteMap");
+                                    return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
+                                });
                             }
                             catch(e)
                             {
@@ -100,7 +104,11 @@ app.post('/deleteUser', jsonParser,async (req, res) =>  {
                                 var text = data.phone;
                                 let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
                                 var model = { phone: text, signature:  hash}
-                                var resPost = await axios.post(DOMMAIN_MAIN + "/secret/deleteUser", model);
+                                var resPost = await axios.post(DOMMAIN_MAIN + "/secret/deleteUser", model)
+                                .catch(function (error) {
+                                    console.log("Exception when call: " + DOMMAIN_MAIN + "/secret/deleteUser");
+                                    return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
+                                });
                                 return res.status(200).json(resPost.data);
                             }
                             catch(e)
@@ -136,7 +144,11 @@ app.post('/addUser', jsonParser,function (req, res) {
             else{
                 try{
                     var model = { data: { _id: callback.insertedId, phone: data.phone, pasword:  hash, createdtime: time, updatedtime: time, status: false } };
-                    var resPost = await axios.post(DOMMAIN_MAIN + "secret/insertUser", model);
+                    var resPost = await axios.post(DOMMAIN_MAIN + "secret/insertUser", model)
+                    .catch(function (error) {
+                        console.log("Exception when call: " + DOMMAIN_MAIN + "/secret/insertUser");
+                        return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
+                    });
                     return res.status(200).json(resPost.data);
                 }
                 catch(ex)
@@ -182,7 +194,11 @@ app.post('/addSession', jsonParser,function (req, res) {
                                         var text = item.phone+true;
                                         let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
                                         var model = { phone: item.phone, status: true, signature: hash };
-                                        var resPost = await axios.post(DOMMAIN_MAIN + "secret/updateStatus", model);
+                                        var resPost = await axios.post(DOMMAIN_MAIN + "secret/updateStatus", model)
+                                        .catch(function (error) {
+                                            console.log("Exception when call: " + DOMMAIN_MAIN + "/secret/updateStatus");
+                                            return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
+                                        });
                                         return res.status(200).json(resPost.data); 
                                     }
                                     catch(e)
@@ -230,7 +246,11 @@ app.post('/resetPassword', jsonParser,async (req, res) => {
                     else{
                         try{
                             var model = { phone: data.phone, password:  hash, signature: signature }
-                            var resPost = await axios.post(DOMMAIN_MAIN + "updatePassword", model);
+                            var resPost = await axios.post(DOMMAIN_MAIN + "updatePassword", model)
+                            .catch(function (error) {
+                                console.log("Exception when call: " + DOMMAIN_MAIN + "updatePassword");
+                                return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
+                            });
                             return res.status(200).json(resPost.data);
                         }
                         catch(ex)
@@ -260,7 +280,11 @@ app.post('/syncUserToAPI', jsonParser,async (req, res) => {
             {
                 try{
                     var model = { lData: result };
-                    var resPost = await axios.post(DOMMAIN_MAIN + "secret/insertUser", model);
+                    var resPost = await axios.post(DOMMAIN_MAIN + "secret/insertUser", model)
+                    .catch(function (error) {
+                        console.log("Exception when call: " + DOMMAIN_MAIN + "secret/insertUser");
+                        return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
+                    });
                     return res.status(200).json(resPost.data);
                 }
                 catch(ex)
@@ -288,7 +312,11 @@ app.post('/syncMapToAPI', jsonParser,async (req, res) => {
             {
                 try{
                     var model = { lData: result };
-                    var resPost = await axios.post(DOMMAIN_MAIN + "secret/insertMap", model);
+                    var resPost = await axios.post(DOMMAIN_MAIN + "secret/insertMap", model)
+                    .catch(function (error) {
+                        console.log("Exception when call: " + DOMMAIN_MAIN + "secret/insertMap");
+                        return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
+                    });
                     return res.status(200).json(resPost.data);
                 }
                 catch(ex)
