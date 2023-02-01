@@ -12,8 +12,8 @@ const PORT = 3000;
 // create application/json parser
 var jsonParser = bodyParser.json()
 
-// const DOMMAIN_MAIN = "https://analyze-api.vercel.app/";
-const DOMMAIN_MAIN = "http://localhost:8999/";
+const DOMMAIN_MAIN = "https://analyze-api.vercel.app/";
+// const DOMMAIN_MAIN = "http://localhost:8999/";
 const TABLE_MAP = "MAP";
 const TALBE_USER = "USER";
 const TABLE_SESSION = "SESSION";
@@ -23,8 +23,8 @@ cronjob.CheckDomain1();
 cronjob.CheckDomain2();
 cronjob.CheckDomain3();
 cronjob.CheckDomain4();
-// cronjob.SyncUserFromAPI();
-// cronjob.SyncMapFromAPI();
+cronjob.SyncUserFromAPI();
+cronjob.SyncMapFromAPI();
 cronjob.CheckStatusUser();
 
 app.get('/', async (req, res)  => {
@@ -183,7 +183,6 @@ app.post('/addSession', jsonParser,function (req, res) {
                                         let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
                                         var model = { phone: item.phone, status: true, signature: hash };
                                         var resPost = await axios.post(DOMMAIN_MAIN + "secret/updateStatus", model);
-                                        console.log(item.phone, resPost.data);
                                         return res.status(200).json(resPost.data); 
                                     }
                                     catch(e)
@@ -285,7 +284,6 @@ app.post('/syncMapToAPI', jsonParser,async (req, res) => {
     try{
         const collection  = connection.db.collection(TABLE_MAP);
         collection.find({}).toArray().then(async function(result){
-            console.log("result", result);
             if(result != null && result.length > 0)
             {
                 try{

@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 const connection = mongoose.connection;
 
 const DOMMAIN_MAIN = "https://analyze-api.vercel.app/";
+// const DOMMAIN_MAIN = "http://localhost:8999/";
 const DOMAIN_SUB1 = "https://asutaka-subcribe1.onrender.com/";
 const DOMAIN_SUB2 = "https://asutaka-subcribe2.onrender.com/";
 const DOMAIN_SUB3 = "https://asutakaoutlook-subcribe3.onrender.com/";
@@ -103,23 +104,61 @@ const CheckDomain4 = () => {
 
 const SyncUserFromAPI = () => {
     new cron.CronJob('30 5 * * * *', async () => {
+        var arrSync = [];
         try{
             const collection  = connection.db.collection(TALBE_USER);
             var text = "users";
             let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
             axios.get(DOMMAIN_MAIN + 'secret/users/' + hash).then(async (response) => {
-                response.forEach((item) => {
-                    collection.find({ phone: item.phone }).toArray().then(function(result){
-                        if(result.password != item.password)
+                if(response != null && response.data.data.length > 0)
+                {
+                    response.data.data.forEach((item) => {
+                        if(item.status == true)
                         {
-                            //update lai db
-                            db.updateUser(TALBE_USER, item.id, item.phone, item.password, item.createdtime, item.updatedtime, item.status, (callback) => {
-                                if(callback == null)
-                                    return res.status(200).json({msg: "[ERROR] Not update user sync from API", code: -100 });
+                            arrSync.push(item);
+                        }
+                    }); 
+
+                    const sleep = ms =>
+                    new Promise(res => {
+                        setTimeout(res, ms)
+                    })
+
+                    const myPromise = num =>
+                    sleep(5000).then(async () => {
+                        //Update to database
+                        try{
+                            collection.find({ phone: num.phone }).toArray().then(function(result){
+                                if(result != null && result.length > 0)
+                                {
+                                    var item = result[0];
+                                    if(result[0].password != num.password)
+                                    {
+                                        //update lai db
+                                        db.updateUser(TALBE_USER, item._id, item.phone, num.password, item.createdtime, item.updatedtime, item.status, (callback) => {
+                                            // console.log("callback", callback);
+                                        });
+                                    }
+                                }
                             });
                         }
-                    });
-                }); 
+                        catch(e)
+                        {
+                            console.log("[EXCEPTION] Database cannot update record| " + e);
+                        }
+                    })
+
+                    const forEachSeries = async (iterable, action) => {
+                        for (const x of iterable) {
+                            await action(x)
+                        }
+                    }
+
+                    forEachSeries(arrSync, myPromise)
+                    .then(() => {
+                        console.log('all done!')
+                    })
+                }
             });
         }
         catch(ex)
@@ -130,24 +169,55 @@ const SyncUserFromAPI = () => {
 };
 
 const SyncMapFromAPI = () => {
+    // new cron.CronJob('0/10 * * * * *', async () => {
     new cron.CronJob('30 10/30 * * * *', async () => {
+        var arr = [];
         try{
             const collection  = connection.db.collection(TABLE_MAP);
             var text = "maps";
             let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
             axios.get(DOMMAIN_MAIN + 'secret/maps/' + hash).then(async (response) => {
-                response.forEach((item) => {
-                    collection.find({ phone: item.phone }).toArray().then(function(result){
-                        if(result == null)
-                        {
-                            //insert map
-                            db.addMap(TABLE_MAP, item.phone, item.chatId, (callback) => {
-                                if(callback == null)
-                                    return res.status(200).json({msg: "[ERROR] Not insert map sync from API", code: -100 });
+                if(response != null && response.data.data.length > 0){
+                    response.data.data.forEach((item) => {
+                        arr.push(item);
+                    }); 
+
+                    const sleep = ms =>
+                    new Promise(res => {
+                        setTimeout(res, ms)
+                    })
+
+                    const myPromise = num =>
+                    sleep(5000).then(async () => {
+                        //Insert to database
+                        try{
+                            collection.find({ phone: num.phone }).toArray().then(function(result){
+                                if(result == null || result.length == 0)
+                                {
+                                    //insert map
+                                    db.addMap(TABLE_MAP, num.phone, num.chatId, (callback) => {
+                                        // console.log("callback", callback);
+                                    });
+                                }
                             });
                         }
-                    });
-                }); 
+                        catch(e)
+                        {
+                            console.log("[EXCEPTION] Database cannot update record| " + e);
+                        }
+                    })
+
+                    const forEachSeries = async (iterable, action) => {
+                        for (const x of iterable) {
+                            await action(x)
+                        }
+                    }
+
+                    forEachSeries(arr, myPromise)
+                    .then(() => {
+                        // console.log('all done!')
+                    })
+                }
             });
         }
         catch(ex)
