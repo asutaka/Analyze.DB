@@ -23,9 +23,9 @@ cronjob.CheckDomain1();
 cronjob.CheckDomain2();
 cronjob.CheckDomain3();
 cronjob.CheckDomain4();
-cronjob.SyncUserFromAPI();
-cronjob.SyncMapFromAPI();
-cronjob.CheckStatusUser();
+//cronjob.SyncUserFromAPI();
+//cronjob.SyncMapFromAPI();
+//cronjob.CheckStatusUser();
 
 app.get('/', async (req, res)  => {
     res.status(200).json({msg: "hello world" });
