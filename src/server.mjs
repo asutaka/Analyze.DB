@@ -28,7 +28,7 @@ cronjob.CheckDomain4();
 //cronjob.CheckStatusUser();
 
 app.get('/', async (req, res)  => {
-    res.status(200).json({msg: "hello world" });
+    res.status(200).json({msg: "hello world", code: 1});
 })
 
 app.listen(PORT, () => console.log('server port: ' + PORT + ' running!'));
@@ -115,16 +115,123 @@ app.post('/deleteUser', jsonParser,async (req, res) =>  {
     }
 });
 
-app.get('/user', function(req, res) {
+//Get users
+app.get('/users', function(req, res) {
     try{
         const collection  = connection.db.collection(TALBE_USER);
-        collection.find({ phone: data.phone }).toArray().then(function(result){
+        collection.find({}).toArray().then(function(result){
             res.status(200).json({data: result });
         })
     }
     catch(e)
     {
-        res.status(200).json({msg: "[EXCEPTION] Not read database", code: -800 });
+        res.status(200).json({msg: "[EXCEPTION] Not read database"+ e, code: -800 });
+    }
+});
+
+//Insert Session
+app.post('/addSession', jsonParser,function (req, res) {
+    var time = (new Date()).getTime();
+    try{
+        var data = req.body;
+        db.addSession(TABLE_SESSION, data.phone, data.session, time, async (callback) => {
+            if(callback.insertedId == null)
+            {
+                return res.status(200).json({msg: "[ERROR] Not Insert session", code: -100 });
+            }
+            else
+            {
+                // Update status for database, api
+                try{
+                    const collection  = connection.db.collection(TALBE_USER);
+                    collection.find({ phone: data.phone }).toArray().then(function(result){
+                        if(result != null && result.length > 0)
+                        {
+                            var item = result[0];
+                            db.updateUser(TALBE_USER, item._id, item.phone, item.password, item.createdtime, time, true, async (callback1) => {
+                                if(callback1 == null)
+                                {
+                                    return res.status(200).json({msg: "[ERROR] Not update status user", code: -102 });
+                                }
+                                else{
+                                    //Update to API
+                                    try{
+                                        var text = item.phone+true;
+                                        let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
+                                        var model = { phone: item.phone, status: true, signature: hash };
+                                        var resPost = await axios.post(DOMMAIN_MAIN + "secret/updateStatus", model)
+                                        .catch(function (error) {
+                                            console.log("Exception when call: " + DOMMAIN_MAIN + "/secret/updateStatus");
+                                            return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
+                                        });
+                                        return res.status(200).json(resPost.data); 
+                                    }
+                                    catch(e)
+                                    {
+                                        return res.status(200).json({msg: DOMMAIN_MAIN + "secret/updateStatus" + "Not Call!", code: -101 });
+                                    }
+                                } 
+                            });
+                        }
+                        else{
+                            return res.status(200).json({msg: "[ERROR] Not found record User for Update", code: -600 });
+                        }
+                    });
+                }
+                catch(e)
+                {
+                    return res.status(200).json({msg: "[EXCEPTION] Not Update status record User", code: -800 });
+                }
+            }
+        });
+    }
+    catch(e)
+    {
+        return res.status(200).json({msg: "[EXCEPTION] Not insert session", code: -801 });
+    }
+});
+
+//Delete Session
+app.post('/deleteSession', jsonParser,async (req, res) =>  {
+    var data = req.body;
+    //Delete on Database
+    try{
+            const collection  = connection.db.collection(TABLE_SESSION);
+            collection.find({ phone: data.phone }).toArray().then(function(result){
+                if(result != null && result.length > 0)
+                {
+                    db.deleteRecord(TABLE_SESSION, result[0]._id, async (callback) => {
+                        if(callback == null)
+                        {
+                            return res.status(200).json({msg: "[ERROR] Not delete record User", code: -100 });
+                        }
+                        else{
+                            return res.status(200).json({msg: "success", code: 1});
+                        }   
+                    });
+                }
+                else{
+                    return res.status(200).json({msg: "[ERROR] Not found record User for Delete", code: -600 });
+                }
+            })
+    }
+    catch(e)
+    {
+        return res.status(200).json({msg: "[EXCEPTION] Not delete record User", code: -800 });
+    }
+});
+
+//Get sessions
+app.get('/sessions', function(req, res) {
+    try{
+        const collection  = connection.db.collection(TABLE_SESSION);
+        collection.find({}).toArray().then(function(result){
+            res.status(200).json({data: result });
+        })
+    }
+    catch(e)
+    {
+        res.status(200).json({msg: "[EXCEPTION] Not read database"+ e, code: -800 });
     }
 });
 
@@ -174,68 +281,6 @@ app.post('/deleteMap', jsonParser,async (req, res) =>  {
     catch(e)
     {
         return res.status(200).json({msg: "[EXCEPTION] Not delete record Map", code: -800 });
-    }
-});
-
-//Insert Session
-app.post('/addSession', jsonParser,function (req, res) {
-    var time = (new Date()).getTime();
-    try{
-        var data = req.body;
-        db.addSession(TABLE_SESSION, data.phone, data.session, time, async (callback) => {
-            if(callback.insertedId == null)
-            {
-                return res.status(200).json({msg: "[ERROR] Not Insert session", code: -100 });
-            }
-            else
-            {
-                // Update status for database, api
-                try{
-                    const collection  = connection.db.collection(TALBE_USER);
-                    collection.find({ phone: data.phone }).toArray().then(function(result){
-                        if(result != null && result.length > 0)
-                        {
-                            var item = result[0];
-                            db.updateUser(TALBE_USER, item.id, item.phone, item.password, item.createdtime, time, true, async (callback1) => {
-                                if(callback1 == null)
-                                {
-                                    return res.status(200).json({msg: "[ERROR] Not update status user", code: -102 });
-                                }
-                                else{
-                                    //Update to API
-                                    try{
-                                        var text = item.phone+true;
-                                        let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
-                                        var model = { phone: item.phone, status: true, signature: hash };
-                                        var resPost = await axios.post(DOMMAIN_MAIN + "secret/updateStatus", model)
-                                        .catch(function (error) {
-                                            console.log("Exception when call: " + DOMMAIN_MAIN + "/secret/updateStatus");
-                                            return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
-                                        });
-                                        return res.status(200).json(resPost.data); 
-                                    }
-                                    catch(e)
-                                    {
-                                        return res.status(200).json({msg: DOMMAIN_MAIN + "secret/updateStatus" + "Not Call!", code: -101 });
-                                    }
-                                } 
-                            });
-                        }
-                        else{
-                            return res.status(200).json({msg: "[ERROR] Not found record User for Update", code: -600 });
-                        }
-                    });
-                }
-                catch(e)
-                {
-                    return res.status(200).json({msg: "[EXCEPTION] Not Update status record User", code: -800 });
-                }
-            }
-        });
-    }
-    catch(e)
-    {
-        return res.status(200).json({msg: "[EXCEPTION] Not insert session", code: -801 });
     }
 });
 
