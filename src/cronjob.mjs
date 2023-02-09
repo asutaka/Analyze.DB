@@ -158,7 +158,7 @@ const CheckDomain4 = () => {
 };
 
 const SyncUserFromAPI = () => {
-    new cron.CronJob('30 5 * * * *', async () => {
+    new cron.CronJob('0 5 * * * *', async () => {
         var arrSync = [];
         try{
             const collection  = connection.db.collection(TALBE_USER);

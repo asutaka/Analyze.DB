@@ -35,52 +35,38 @@ app.listen(PORT, () => console.log('server port: ' + PORT + ' running!'));
 await db.conn();
 
 
-//Delete Map
-app.post('/deleteMap', jsonParser,async (req, res) =>  {
-    var data = req.body;
-    //Delete on Database
+//Insert User
+app.post('/addUser', jsonParser,function (req, res) {
     try{
-            const collection  = connection.db.collection(TABLE_MAP);
-            collection.find({ phone: data.phone }).toArray().then(function(result){
-                if(result != null && result.length > 0)
-                {
-                    db.deleteRecord(TABLE_MAP, result[0]._id, async (callback) => {
-                        if(callback == null)
-                        {
-                            return res.status(200).json({ msg: "[ERROR] Not delete record Map in Database", code: -100 });
-                        }
-                        else
-                        {
-                            //Delete on API
-                            try{
-                                var text = data.phone;
-                                let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
-                                var model = { phone: text, signature:  hash}
-                                await axios.post(DOMMAIN_MAIN + "/secret/deleteMap", model)
-                                .then(function (response){
-                                    return res.status(200).json(response.data);
-                                })
-                                .catch(function (error) {
-                                    console.log("Exception when call: " + DOMMAIN_MAIN + "/secret/deleteMap");
-                                    return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
-                                });
-                            }
-                            catch(e)
-                            {
-                                return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -101 });
-                            }
-                        } 
+        var data = req.body;
+        var time = (new Date()).getTime();
+        var text = "1234a@";
+        let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
+        db.addUser(TALBE_USER, data.phone, hash, time, async (callback) => {
+            if(callback.insertedId == null)
+            {
+                return res.status(200).json({msg: "[ERROR] Not Insert record", code: -100 });
+            }
+            else{
+                try{
+                    var model = { data: { _id: callback.insertedId, phone: data.phone, pasword:  hash, createdtime: time, updatedtime: time, status: false } };
+                    var resPost = await axios.post(DOMMAIN_MAIN + "secret/insertUser", model)
+                    .catch(function (error) {
+                        console.log("Exception when call: " + DOMMAIN_MAIN + "/secret/insertUser");
+                        return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
                     });
+                    return res.status(200).json(resPost.data);
                 }
-                else
+                catch(ex)
                 {
-                    return res.status(200).json({msg: "[ERROR] Not found record Map for Delete", code: -600 });
+                    return res.status(200).json({msg: DOMMAIN_MAIN + "secret/insertUser|" + "Not Call!", code: -101 });
                 }
-            })
+            }
+        });
     }
     catch(e)
     {
-        return res.status(200).json({msg: "[EXCEPTION] Not delete record Map", code: -800 });
+        return res.status(200).json({msg: "[EXCEPTION] Not insert user", code: -800 });
     }
 });
 
@@ -129,38 +115,65 @@ app.post('/deleteUser', jsonParser,async (req, res) =>  {
     }
 });
 
-//Insert User
-app.post('/addUser', jsonParser,function (req, res) {
+app.get('/user', function(req, res) {
     try{
-        var data = req.body;
-        var time = (new Date()).getTime();
-        var text = "1234a@";
-        let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
-        db.addUser(TALBE_USER, data.phone, hash, time, async (callback) => {
-            if(callback.insertedId == null)
-            {
-                return res.status(200).json({msg: "[ERROR] Not Insert record", code: -100 });
-            }
-            else{
-                try{
-                    var model = { data: { _id: callback.insertedId, phone: data.phone, pasword:  hash, createdtime: time, updatedtime: time, status: false } };
-                    var resPost = await axios.post(DOMMAIN_MAIN + "secret/insertUser", model)
-                    .catch(function (error) {
-                        console.log("Exception when call: " + DOMMAIN_MAIN + "/secret/insertUser");
-                        return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
-                    });
-                    return res.status(200).json(resPost.data);
-                }
-                catch(ex)
-                {
-                    return res.status(200).json({msg: DOMMAIN_MAIN + "secret/insertUser|" + "Not Call!", code: -101 });
-                }
-            }
-        });
+        const collection  = connection.db.collection(TALBE_USER);
+        collection.find({ phone: data.phone }).toArray().then(function(result){
+            res.status(200).json({data: result });
+        })
     }
     catch(e)
     {
-        return res.status(200).json({msg: "[EXCEPTION] Not insert user", code: -800 });
+        res.status(200).json({msg: "[EXCEPTION] Not read database", code: -800 });
+    }
+});
+
+//Delete Map
+app.post('/deleteMap', jsonParser,async (req, res) =>  {
+    var data = req.body;
+    //Delete on Database
+    try{
+            const collection  = connection.db.collection(TABLE_MAP);
+            collection.find({ phone: data.phone }).toArray().then(function(result){
+                if(result != null && result.length > 0)
+                {
+                    db.deleteRecord(TABLE_MAP, result[0]._id, async (callback) => {
+                        if(callback == null)
+                        {
+                            return res.status(200).json({ msg: "[ERROR] Not delete record Map in Database", code: -100 });
+                        }
+                        else
+                        {
+                            //Delete on API
+                            try{
+                                var text = data.phone;
+                                let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
+                                var model = { phone: text, signature:  hash}
+                                await axios.post(DOMMAIN_MAIN + "/secret/deleteMap", model)
+                                .then(function (response){
+                                    return res.status(200).json(response.data);
+                                })
+                                .catch(function (error) {
+                                    console.log("Exception when call: " + DOMMAIN_MAIN + "/secret/deleteMap");
+                                    return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -102 });
+                                });
+                            }
+                            catch(e)
+                            {
+                                return res.status(200).json({msg: DOMMAIN_MAIN + "Not Call!", code: -101 });
+                            }
+                        } 
+                    });
+                }
+                else
+                {
+                    return res.status(200).json({msg: "[ERROR] Not found record Map for Delete", code: -600 });
+                }
+            })
+    }
+    catch(e)
+    {
+        return res.status(200).json({msg: "[EXCEPTION] Not delete record Map", code: -800 });
     }
 });
 
