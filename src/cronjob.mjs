@@ -157,6 +157,50 @@ const CheckDomain4 = () => {
     }).start();
 };
 
+const SyncUser = () => {
+    new cron.CronJob('0/30 * * * * *', async () => {
+        try{
+            var text = "users";
+            let hash = crypto.createHmac('sha256', "NY2023@").update(text).digest("base64");
+            axios.get(DOMMAIN_MAIN + "secret/users/" + hash)
+                .then(async (response) => {
+                    if(response.data.data.length == 0)
+                    {
+                        const collection  = connection.db.collection(TALBE_USER);
+                        try{
+                            collection.find({}).toArray().then(async (result) => {
+                                if(result != null && result.length > 0)
+                                {
+                                    try{
+                                        var model = { lData: result };
+                                        var resPost = await axios.post(DOMMAIN_MAIN + "secret/insertUser", model)
+                                        .catch(function (error) {
+                                            console.log("Exception when call: " + DOMMAIN_MAIN + "/secret/insertUser");
+                                        });
+                                    }
+                                    catch(ex)
+                                    {
+                                        console.log("[EXCEPTION]" + DOMMAIN_MAIN + "secret/insertUser| Not Call!" + e);
+                                    }
+                                }
+                            });
+                        }
+                        catch(e)
+                        {
+                            console.log("[EXCEPTION] Database cannot get record| " + e);
+                        }
+                    }
+                })
+                .catch(function (error) {
+                    console.log("[EXCEPTION] when get from API" + DOMMAIN_MAIN + "secret/users/", error);
+                });
+        }
+        catch(e){
+            console.log("[EXCEPTION]", e);
+        }
+    }).start();
+}
+
 const SyncUserFromAPI = () => {
     new cron.CronJob('0 5 * * * *', async () => {
         var arrSync = [];
@@ -371,4 +415,4 @@ const CheckStatusUser = () => {
     }).start();
 };
 
-export default { CheckDomainMain, CheckDomain1, CheckDomain2, CheckDomain3, CheckDomain4, SyncUserFromAPI, SyncMapFromAPI, CheckStatusUser};
+export default { CheckDomainMain, CheckDomain1, CheckDomain2, CheckDomain3, CheckDomain4, SyncUser, SyncUserFromAPI, SyncMapFromAPI, CheckStatusUser};
