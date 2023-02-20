@@ -7,6 +7,7 @@ import mongoose from 'mongoose'
 const connection = mongoose.connection;
 
 const DOMMAIN_MAIN = "https://analyze-api.vercel.app/";
+const DOMMAIN_CHECK = "https://job-check-app.vercel.app/";
 // const DOMMAIN_MAIN = "http://localhost:8999/";
 const DOMAIN_SUB1 = "https://asutaka-subcribe1.onrender.com/";
 const DOMAIN_SUB2 = "https://asutaka-subcribe2.onrender.com/";
@@ -36,6 +37,26 @@ const CheckDomainMain = () => {
         catch(error)
         {
             console.error("CheckDomainMain", error.response.data);
+        }
+    }).start();
+};
+
+const CheckDomainCheck = () => {
+    new cron.CronJob('30 2/3 * * * *', async () => {
+        try{
+            var date = (new Date()).getTime();
+            var result = await axios.get(DOMMAIN_CHECK)
+            .catch(function (error) {
+                console.log("Exception when call: " + DOMMAIN_CHECK);
+            });
+            if(result != null)
+            {
+                console.log(date + "|" + DOMMAIN_CHECK + "|", result.data);
+            }
+        }
+        catch(error)
+        {
+            console.error("CheckDomainCheck", error.response.data);
         }
     }).start();
 };
@@ -415,4 +436,4 @@ const CheckStatusUser = () => {
     }).start();
 };
 
-export default { CheckDomainMain, CheckDomain1, CheckDomain2, CheckDomain3, CheckDomain4, SyncUser, SyncUserFromAPI, SyncMapFromAPI, CheckStatusUser};
+export default { CheckDomainMain, CheckDomainCheck, CheckDomain1, CheckDomain2, CheckDomain3, CheckDomain4, SyncUser, SyncUserFromAPI, SyncMapFromAPI, CheckStatusUser};

@@ -19,6 +19,7 @@ const TALBE_USER = "USER";
 const TABLE_SESSION = "SESSION";
 
 cronjob.CheckDomainMain();
+cronjob.CheckDomainCheck();
 cronjob.CheckDomain1();
 cronjob.CheckDomain2();
 cronjob.CheckDomain3();
