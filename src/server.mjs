@@ -13,17 +13,14 @@ const PORT = 3000;
 var jsonParser = bodyParser.json()
 
 const DOMMAIN_MAIN = "https://analyze-api.vercel.app/";
-// const DOMMAIN_MAIN = "http://localhost:8999/";
 const TABLE_MAP = "MAP";
 const TALBE_USER = "USER";
 const TABLE_SESSION = "SESSION";
 
 cronjob.CheckDomainMain();
-cronjob.CheckDomainCheck();
 cronjob.CheckDomain1();
 cronjob.CheckDomain2();
 cronjob.CheckDomain3();
-cronjob.CheckDomain4();
 cronjob.SyncUser();
 
 //cronjob.SyncUserFromAPI();

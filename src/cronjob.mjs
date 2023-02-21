@@ -7,16 +7,9 @@ import mongoose from 'mongoose'
 const connection = mongoose.connection;
 
 const DOMMAIN_MAIN = "https://analyze-api.vercel.app/";
-const DOMMAIN_CHECK = "https://job-check-app.vercel.app/";
-// const DOMMAIN_MAIN = "http://localhost:8999/";
-const DOMAIN_SUB1 = "https://asutaka-subcribe1.onrender.com/";
-const DOMAIN_SUB2 = "https://asutaka-subcribe2.onrender.com/";
-const DOMAIN_SUB3 = "https://asutakaoutlook-subcribe3.onrender.com/";
-const DOMAIN_SUB4 = "https://asutakaoutlook-subcribe4.onrender.com/";
-const DOMAIN_SUB5 = "https://nguyenphuict-subcribe5.onrender.com/";
-const DOMAIN_SUB6 = "https://nguyenphuict-subcribe6.onrender.com/";
-const DOMAIN_SUB7 = "https://asutakayahoo-subcribe7.onrender.com/";
-const DOMAIN_SUB8 = "https://asutakayahoo-subcribe8.onrender.com/";
+const DOMAIN_SUB1 = "https://ashi-subcribe1.onrender.com/";
+const DOMAIN_SUB2 = "https://ashi-subcribe2.onrender.com/";
+const DOMAIN_SUB3 = "https://ashi-subcribe3.onrender.com/";
 const TABLE_MAP = "MAP";
 const TALBE_USER = "USER";
 const TABLE_SESSION = "SESSION";
@@ -41,26 +34,6 @@ const CheckDomainMain = () => {
     }).start();
 };
 
-const CheckDomainCheck = () => {
-    new cron.CronJob('30 2/3 * * * *', async () => {
-        try{
-            var date = (new Date()).getTime();
-            var result = await axios.get(DOMMAIN_CHECK)
-            .catch(function (error) {
-                console.log("Exception when call: " + DOMMAIN_CHECK);
-            });
-            if(result != null)
-            {
-                console.log(date + "|" + DOMMAIN_CHECK + "|", result.data);
-            }
-        }
-        catch(error)
-        {
-            console.error("CheckDomainCheck", error.response.data);
-        }
-    }).start();
-};
-
 const CheckDomain1 = () => {
     new cron.CronJob('30 1/3 * * * *', async () => {
         try{
@@ -73,15 +46,6 @@ const CheckDomain1 = () => {
             {
                 console.log(date + "|" + DOMAIN_SUB1 + "|", result1.data);
             }
-    
-            var result2 = await axios.get(DOMAIN_SUB2)
-            .catch(function (error) {
-                console.log("Exception when call: " + DOMAIN_SUB2);
-            });
-            if(result2 != null)
-            {
-                console.log(date + "|" + DOMAIN_SUB2 + "|", result2.data);
-            }
         }
         catch(error)
         {
@@ -91,6 +55,26 @@ const CheckDomain1 = () => {
 };
 
 const CheckDomain2 = () => {
+    new cron.CronJob('30 2/3 * * * *', async () => {
+        try{
+            var date = (new Date()).getTime();
+            var result1 = await axios.get(DOMAIN_SUB2)
+            .catch(function (error) {
+                console.log("Exception when call: " + DOMAIN_SUB2);
+            });
+            if(result1 != null)
+            {
+                console.log(date + "|" + DOMAIN_SUB2 + "|", result1.data);
+            }
+        }
+        catch(error)
+        {
+            console.error("CheckDomain2", error.response.data);
+        }
+    }).start();
+};
+
+const CheckDomain3 = () => {
     new cron.CronJob('30 3/3 * * * *', async () => {
         try{
             var date = (new Date()).getTime();
@@ -102,78 +86,10 @@ const CheckDomain2 = () => {
             {
                 console.log(date + "|" + DOMAIN_SUB3 + "|", result1.data);
             }
-    
-            var result2 = await axios.get(DOMAIN_SUB4)
-            .catch(function (error) {
-                console.log("Exception when call: " + DOMAIN_SUB4);
-            });
-            if(result2 != null)
-            {
-                console.log(date + "|" + DOMAIN_SUB4 + "|", result2.data);
-            }
-        }
-        catch(error)
-        {
-            console.error("CheckDomain2", error.response.data);
-        }
-    }).start();
-};
-
-const CheckDomain3 = () => {
-    new cron.CronJob('30 5/3 * * * *', async () => {
-        try{
-            var date = (new Date()).getTime();
-            var result1 = await axios.get(DOMAIN_SUB5)
-            .catch(function (error) {
-                console.log("Exception when call: " + DOMAIN_SUB5);
-            });
-            if(result1 != null)
-            {
-                console.log(date + "|" + DOMAIN_SUB5 + "|", result1.data);
-            }
-    
-            var result2 = await axios.get(DOMAIN_SUB6)
-            .catch(function (error) {
-                console.log("Exception when call: " + DOMAIN_SUB6);
-            });
-            if(result2 != null)
-            {
-                console.log(date + "|" + DOMAIN_SUB6 + "|", result2.data);
-            }
         }
         catch(error)
         {
             console.error("CheckDomain3", error.response.data);
-        }
-    }).start();
-};
-
-const CheckDomain4 = () => {
-    new cron.CronJob('30 7/3 * * * *', async () => {
-        try{
-            var date = (new Date()).getTime();
-            var result1 = await axios.get(DOMAIN_SUB7)
-            .catch(function (error) {
-                console.log("Exception when call: " + DOMAIN_SUB7);
-            });
-            if(result1 != null)
-            {
-                console.log(date + "|" + DOMAIN_SUB7 + "|", result1.data);
-            }
-            
-    
-            var result2 = await axios.get(DOMAIN_SUB8)
-            .catch(function (error) {
-                console.log("Exception when call: " + DOMAIN_SUB8);
-            });
-            if(result2 != null)
-            {
-                console.log(date + "|" + DOMAIN_SUB8 + "|", result2.data);
-            }
-        }
-        catch(error)
-        {
-            console.error("CheckDomain4", error.response.data);
         }
     }).start();
 };
@@ -436,4 +352,4 @@ const CheckStatusUser = () => {
     }).start();
 };
 
-export default { CheckDomainMain, CheckDomainCheck, CheckDomain1, CheckDomain2, CheckDomain3, CheckDomain4, SyncUser, SyncUserFromAPI, SyncMapFromAPI, CheckStatusUser};
+export default { CheckDomainMain, CheckDomain1, CheckDomain2, CheckDomain3, SyncUser, SyncUserFromAPI, SyncMapFromAPI, CheckStatusUser};
